@@ -1,3 +1,16 @@
 Project aiming to migrate existing sectools checking scripts
 to SCE (Script Check Engine) for use with XCCDF and related technologies
 
+== ./script_tester.py ==
+A helper script that allows you to test migrated scripts without having all
+of the machinery in place.
+
+Usage:
+./script_tester.py some_script
+./script_tester.py *.sh *.py
+etc..
+
+TODO:
+Make an aggregator script that will create XCCDF using lines from
+the scripts for title and description.
+
