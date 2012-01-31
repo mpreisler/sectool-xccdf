@@ -25,12 +25,14 @@ function canLogIn {
 	password="$(getent shadow "${1}" | cut -d: -f 2)"
 	# length of passwd - very short means invalid password and disabled account
 	if (( ${#password} < 13 )); then
-	    return ${E_FAIL}
+	    return 1
 	else
-	    return ${E_OK}
+	    # 0 is used as true in this case
+	    return 0
 	fi
     else
-	return ${E_FAIL}
+	# 1 is used as false in this case
+	return 1
     fi
 }
 
