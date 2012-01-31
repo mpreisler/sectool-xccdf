@@ -50,8 +50,7 @@ $DIRS"
 
 ret=$XCCDF_RESULT_PASS
 
-echo "$dirs" |
-{ while read dir perm
+while read dir perm
 do
     #echo "dir: $dir   perm: $perm"
     [ "$dir" == "" ] && continue
@@ -78,8 +77,9 @@ do
             ret=$XCCDF_RESULT_FAIL
 	fi
     fi
-done
-}
+done <<EOF
+$dirs
+EOF
 
 exit $ret
 
