@@ -23,6 +23,7 @@
 #
 
 from xml.etree import ElementTree
+from datetime import date
 
 sce_system_name = "http://open-scap.org/XMLSchema/SCE-definitions-1"
 
@@ -70,6 +71,48 @@ for g in args.globs:
         print("No file matches '%s'" % (g))
 
 root = ElementTree.Element("Benchmark")
+root.set("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
+root.set("xmlns", "http://checklists.nist.gov/xccdf/1.1")
+root.set("id", "STUB")
+
+status = ElementTree.Element("status")
+status.set("date", date.today().strftime("%Y-%m-%d"))
+status.text = "draft"
+root.append(status)
+
+title = ElementTree.Element("title")
+title.text = "STUB"
+root.append(title)
+
+description = ElementTree.Element("description")
+description.text = "STUB"
+root.append(description)
+
+notice = ElementTree.Element("notice")
+notice.set("id", "disclaimer")
+notice.text = "This XCCDF has been automatically generated, it should only serve as a baseline!"
+root.append(notice)
+
+front_matter = ElementTree.Element("front-matter")
+front_matter.text = "STUB"
+root.append(front_matter)
+
+rear_matter = ElementTree.Element("rear-matter")
+rear_matter.text = "STUB"
+root.append(rear_matter)
+
+reference = ElementTree.Element("reference")
+reference.set("href", "STUB")
+root.append(reference)
+
+platform = ElementTree.Element("platform")
+platform.set("idref", "cpe:/o:redhat:enterprise_linux:6")
+root.append(platform)
+
+version = ElementTree.Element("version")
+version.text = "0.1"
+root.append(version)
+  
 for file in files:
     element = rule_to_element(file)
     root.append(element)
