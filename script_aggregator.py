@@ -25,7 +25,8 @@
 from xml.etree import ElementTree
 from datetime import date
 import os.path
-
+import ConfigParser
+    
 sce_system_name = "http://open-scap.org/XMLSchema/SCE-definitions-1"
 
 last_given_rule_id_suffix = 0
@@ -36,14 +37,32 @@ def generate_rule_id(prefix = "rule-"):
     
     return "%s%i" % (prefix, last_given_rule_id_suffix)
 
-def rule_to_element(filepath):
+def rule_to_element(filepath, dscpath):
+    title_text = filepath
+    description_text = "STUB"
+
+    if dscpath is not None:
+        try:
+            config = ConfigParser.RawConfigParser()
+            config.read(dscpath)
+            
+            title_text = config.get("HEADER", "NAME")
+            description_text = config.get("HEADER", "DESCRIPTION")
+            
+        except Exception as e:
+            print("Parsing config file '%s' failed (exception: %s)" % (dscfile, e))
+    
     ret = ElementTree.Element("Rule")
     ret.set("id", generate_rule_id())
     ret.set("selected", "true")
     
     title = ElementTree.Element("title")
-    title.text = os.path.basename(filepath)
+    title.text = os.path.basename(title_text)
     ret.append(title)
+    
+    description = ElementTree.Element("description")
+    description.text = os.path.basename(description_text)
+    ret.append(description)
     
     check = ElementTree.Element("check")
     check.set("system", sce_system_name)
@@ -58,6 +77,8 @@ def rule_to_element(filepath):
 import argparse
 
 parser = argparse.ArgumentParser(description = "Aggregates given scripts and generates XCCDF that references them all")
+parser.add_argument("--dscprefix", type = str, nargs = "?", help = "Prefix to a folder with .dsc files")
+parser.add_argument("--output", type = str, default = "output.xccdf", help = "Path of the output file")
 parser.add_argument("globs", metavar = "F", type = str, nargs = "+",
                    help = "File or glob of the check script(s)")
 
@@ -115,7 +136,17 @@ version.text = "0.1"
 root.append(version)
   
 for file in files:
-    element = rule_to_element(file)
+    file_basename = os.path.basename(file)
+    
+    dsc_basename = file_basename[0:file_basename.rfind(".")] + ".dsc"
+    dscpath = os.path.join(args.dscprefix, dsc_basename)
+    if not os.path.exists(dscpath):
+        if args.dscprefix:
+            print("Can't find dsc for '%s'. Looked for it at '%s'." % (file, dscpath))
+            
+        dscpath = None
+        
+    element = rule_to_element(file, dscpath)
     root.append(element)
 
 # taken from http://effbot.org/zone/element-lib.htm#prettyprint
@@ -135,4 +166,6 @@ def indent(elem, level=0):
             elem.tail = i
 
 indent(root)
-print(ElementTree.tostring(root, "utf-8"))
+with open(args.output, "w") as f:
+    f.write(ElementTree.tostring(root, "utf-8"))
+    
