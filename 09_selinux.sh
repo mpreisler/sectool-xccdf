@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-SELINUX_MODE=`getenforce`
+SELINUX_MODE=`/usr/sbin/getenforce`
 
 if [[ $SELINUX_MODE != "Enforcing" ]]
 then
