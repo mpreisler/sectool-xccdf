@@ -10,7 +10,11 @@ Usage:
 ./script_tester.py *.sh *.py
 etc..
 
-TODO:
-Make an aggregator script that will create XCCDF using lines from
-the scripts for title and description.
+== ./script_aggregator.py ==
+Dirty script that generates an XCCDF referencing all given scripts as SCE checks.
+
+Usage:
+./script_aggregator.py some_script > result.xccdf
+./script_aggregator.py *.sh *.py *.pl > result.xccdf
+etc..
 
