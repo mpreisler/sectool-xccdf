@@ -24,6 +24,7 @@
 
 from xml.etree import ElementTree
 from datetime import date
+import os.path
 
 sce_system_name = "http://open-scap.org/XMLSchema/SCE-definitions-1"
 
@@ -41,7 +42,7 @@ def rule_to_element(filepath):
     ret.set("selected", "true")
     
     title = ElementTree.Element("title")
-    title.text = "STUB"
+    title.text = os.path.basename(filepath)
     ret.append(title)
     
     check = ElementTree.Element("check")
