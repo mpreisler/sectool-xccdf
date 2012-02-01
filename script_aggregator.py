@@ -73,5 +73,22 @@ root = ElementTree.Element("Benchmark")
 for file in files:
     element = rule_to_element(file)
     root.append(element)
-    
+
+# taken from http://effbot.org/zone/element-lib.htm#prettyprint
+def indent(elem, level=0):
+    i = "\n" + level*"  "
+    if len(elem):
+        if not elem.text or not elem.text.strip():
+            elem.text = i + "  "
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+        for elem in elem:
+            indent(elem, level+1)
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+    else:
+        if level and (not elem.tail or not elem.tail.strip()):
+            elem.tail = i
+
+indent(root)
 print(ElementTree.tostring(root, "utf-8"))
