@@ -18,7 +18,7 @@ group_shadow=/etc/gshadow
 if [[ $UID -ne '0' ]]
 then
     echo "You have to be logged as root to run this test!"
-    exit ${XCCDF_RESULT_FAIL}
+    exit ${XCCDF_RESULT_ERROR}
 fi
 
 RET=$XCCDF_RESULT_PASS
