@@ -10,8 +10,44 @@
 # should be XCCDF bound variable, TODO
 GRUBCONF=/boot/grub/grub.conf
 
-# TODO
-#check_file_perm ${GRUBCONF} 600 root:root 1 $E_BAD_PERMISSIONS "Bootloader configuration file"
+function check_file_perm () {
+    if [[ -a "${1}" ]]; then
+        local -i CPERM=$(stat -c '%a' "${1}")
+
+        if (( ${CPERM} != $2 )); then
+            if (( (8#${CPERM} | 8#${2}) == 8#${2} )); then
+                if (( ${4} == 1 )); then
+                    echo "Permissions on $(stat -c '%F' "${1}") \"${1}\" are more restrictive than required: ${CPERM} (${6:-uknown}, required persmissions are ${2})"
+                fi
+            else
+                if (( ${4} == 1 )); then
+                    echo "Wrong permissions on $(stat -c '%F' "${1}") \"${1}\": ${CPERM} (${6:-unknown}, required permissions are ${2})"
+                    RET=$XCCDF_RESULT_FAIL
+                fi
+            fi
+        fi
+
+        if ! (stat -c '%U:%G' "${1}" | grep -q "${3}"); then
+            if (( ${4} == 1 )); then
+                echo "Wrong owner/group on $(stat -c '%F' "${1}"): \"${1}\" (${6:-unknown}, required owner/group is ${3})"
+                RET=$XCCDF_RESULT_FAIL
+            fi
+        fi
+    else
+        if (( ${4} == 1 )); then
+            echo "Missing file or directory: \"${1}\" (${6:-unknown})"
+            RET=$XCCDF_RESULT_FAIL
+        fi
+    fi
+}
+
+check_file_perm ${GRUBCONF} 600 root:root 1 $E_BAD_PERMISSIONS "Bootloader configuration file"
+
+if [[ $UID -ne '0' ]]
+then
+    echo "You have to be logged as root to run this test!"
+    exit ${XCCDF_RESULT_ERROR}
+fi
 
 if [[ "`egrep '^password' ${GRUBCONF} | wc -l`" == "0" ]]
 then
