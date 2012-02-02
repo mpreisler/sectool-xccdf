@@ -39,7 +39,8 @@ def generate_rule_id(prefix = "rule-"):
 
 def rule_to_element(filepath, dscpath):
     title_text = os.path.basename(filepath)
-    description_text = "STUB"
+    # leading newline to workaround <pre> and indentation issues (inner whitespace is content)
+    description_text = "\nSTUB"
 
     if dscpath is not None:
         try:
