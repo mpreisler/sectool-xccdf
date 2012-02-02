@@ -4,6 +4,12 @@
 # Author(s): Daniel Kopecek <dkopecek@redhat.com>
 #
 
+if [[ $UID -ne '0' ]]
+then
+    echo "You have to be logged as root to run this test!"
+    exit ${XCCDF_RESULT_ERROR}
+fi
+
 SSHD_USER="root"
 SSHD_GROUP="root"
 SSHD_CONFIG_PERM=600
