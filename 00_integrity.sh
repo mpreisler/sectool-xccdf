@@ -5,6 +5,8 @@
 # Written by Dan Kopecek <dkopecek@redhat.com>
 # Adapted for SCE by Martin Preisler <mpreisle@redhat.com>
 
+RET=$XCCDF_RESULT_PASS
+
 # For now we are storing these hardcoded in here,
 # but we would like to pass them as XCCDF bound variables in the future!
 CMDPATH="/bin:/sbin:/root/bin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
@@ -22,8 +24,6 @@ DIRECTORY_LIST="/bin
 		/var"
 
 function check_dirs () {
-    local RET=${XCCDF_RESULT_PASS}
-
     while read dir; do
 	if [[ ! -d "${dir}" ]]; then
 	    echo "Directory \"${dir}\" does not exist!"
@@ -32,18 +32,14 @@ function check_dirs () {
     done <<EOF
 ${DIRECTORY_LIST}
 EOF
-
-    exit $RET
 }
 
 function check_cmds () {
-    local RET=${XCCDF_RESULT_PASS}
-
     OUTPUT="$(${RPMVERIFY} --noscript --nomtime -f "${COREPKG}" 2> /dev/null)"
     if (( $? != 0 )); then
 	if [[ -n "$(echo -e "${OUTPUT}" | sed -n 's|^[.A-Z0-9]\{8\}[[:space:]]\{1,\}[^c][[:space:]]\{1,\}.*$|&|p')" ]]; then
 	    echo "Verify failed for package \"${COREPKG}\"!"
-	    exit $XCCDF_RESULT_FAIL
+	    RET=$XCCDF_RESULT_FAIL
 	fi
     fi
 
@@ -74,14 +70,12 @@ function check_cmds () {
 EOF
 	    if (( $I > 0 )); then
 		echo "Command \"${COMMANDNAME}\" (${path}) has duplicates in these locations: ${DUPLICATES[*]}!"
-		exit $XCCDF_RESULT_FAIL
+		RET=$XCCDF_RESULT_FAIL
 	    fi
 	fi
     done <<EOF
 `rpm -ql "${COREPKG}" | grep bin/`
 EOF
-
-    exit ${RET}
 }
 
 # --- Main ----------------------- #
@@ -90,5 +84,7 @@ PATH="${CMDPATH}"
 
 check_dirs 
 check_cmds 
+
+exit $RET
 
 # --- EOF ------------------------ #
