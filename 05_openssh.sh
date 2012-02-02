@@ -71,6 +71,12 @@ alias int='declare -xi'
 alias var='declare -x'
 alias array='declare -xa'
 
+int -r E_OK=0
+int -r E_FAIL=1
+int -r E_FATAL=2
+int -r TRUE=0
+int -r FALSE=1
+
 const E_NOFILE=13
 const E_NORECORD=14
 const E_NOLIST=15
