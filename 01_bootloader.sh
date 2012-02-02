@@ -7,6 +7,8 @@
 # bootloader.sh                                               #
 # ----------------------------------------------------------- #
 
+RET=$XCCDF_RESULT_PASS
+
 # should be XCCDF bound variable, TODO
 GRUBCONF=/boot/grub/grub.conf
 
@@ -41,21 +43,21 @@ function check_file_perm () {
     fi
 }
 
-check_file_perm ${GRUBCONF} 600 root:root 1 $E_BAD_PERMISSIONS "Bootloader configuration file"
-
 if [[ $UID -ne '0' ]]
 then
     echo "You have to be logged as root to run this test!"
     exit ${XCCDF_RESULT_ERROR}
 fi
 
+check_file_perm ${GRUBCONF} 600 root:root 1 $E_BAD_PERMISSIONS "Bootloader configuration file"
+
 if [[ "`egrep '^password' ${GRUBCONF} | wc -l`" == "0" ]]
 then
 	echo "${GRUBCONF} does not contain a password"
 	echo "Please add the line 'password --md5 hash' to ${GRUBCONF}, where hash is output of grub-md5-crypt"	
 
-	exit $XCCDF_RESULT_FAIL
+	RET=$XCCDF_RESULT_FAIL
 fi
 
-exit $XCCDF_RESULT_PASS
+exit $RET
 
