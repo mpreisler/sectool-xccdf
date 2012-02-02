@@ -626,6 +626,7 @@ function check_chain6 () {
 	ACCEPT)
 	    if [[ -z "${RULES}" ]]; then
 		echo "No firewall rules in IPv6 ${1} chain and policy is set to ACCEPT."
+		RET=$XCCDF_RESULT_FAIL
 
 		if (( $ERROK == 0 )); then
 		    return ${E_FAIL}
