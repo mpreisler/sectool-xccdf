@@ -70,7 +70,7 @@ i=0
 while read line
 do
 	i=$[i+1]
-	
+
 	##### empty line #####
 	if [[ "$line" == "" ]]
 	then
@@ -90,13 +90,13 @@ do
 		RET=$XCCDF_RESULT_FAIL
 		continue
 	fi
-	
+
 	# now we can parse these fields, we know that all fields exist
 	groupname="`echo $line | awk -F: '{print $1}'`"
 	pass="`echo $line | awk -F: '{print $2}'`"
 	gid="`echo $line | awk -F: '{print $3}'`"
 	users="`echo $line | awk -F: '{print $4}'`"
-	
+
 	##### line has an empty groupname field #####
 	if [[ "$groupname" == "" ]]
 	then
@@ -104,7 +104,7 @@ do
 		echo "Check this line, fill in first item (groupname), or delete whole line."
 		RET=$XCCDF_RESULT_FAIL
 	fi
-	
+
 	##### disallowed characters #####
 	isValidName $groupname
 	if [ $? -ne 1 ]
@@ -113,7 +113,7 @@ do
 		echo "Check this line and rename group name to contain lowercase letters only. Don't forget to update the $group_shadow file!"
 		RET=$XCCDF_RESULT_FAIL
 	fi
-	
+
 	##### too long groupname #####
 	getValueFromH '/usr/include/bits/utmp.h' 'UT_NAMESIZE'
 	MaxLength=$?
@@ -124,7 +124,7 @@ do
 		echo "Check this line in $group and rename group name to be shorter than $MaxLength characters"
 		RET=$XCCDF_RESULT_FAIL
 	fi
-	
+
 	##### password not shadowed #####
 	if [[ "$pass" != "x" ]] && [[ "$pass" != "" ]]
 	then
@@ -148,7 +148,7 @@ do
 			if (( $gid < 0 || $gid > $GID_MAX_VALUE )); then
 				echo "$group: Line $i: Group $groupname has GID out of range"
 				echo "Change GID of this group to be in the range <0, $GID_MAX_VALUE>"
-				
+
 				RET=$XCCDF_RESULT_FAIL
 			fi
 

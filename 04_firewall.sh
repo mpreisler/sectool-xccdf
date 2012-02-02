@@ -105,7 +105,7 @@ function set_system_ttl () {
 	if (( ${1} > 0 && ${1} < 256 )); then
 		if [[ -f "${PROCDIR}/sys/net/ipv4/ip_default_ttl" ]]; then
 			ORIG_TTL=$(cat "${PROCDIR}/sys/net/ipv4/ip_default_ttl")
-			
+
 			# TTL watchdog
 			bash -c 'while `ps -A | grep -q ^[[:space:]]\*${MYPID}`; do sleep 1; done; echo ${ORIG_TTL} > /proc/sys/net/ipv4/ip_default_ttl || sysctl -w net.ipv4.ip_default_ttl=${ORIG_TTL};'
 			TTLWATCHDOGPID=$!
@@ -138,11 +138,11 @@ function reset_system_ttl () {
 		echo "Internal error: reset_system_ttl(): ORIG_TTL=\"${ORIG_TTL}\""
 		exit $XCCDF_RESULT_ERROR
 	fi
-	
+
 	# kill watchdog
 	kill -9 ${TTLWATCHDOGPID}
 	TTLWATCHDOGPID=0
-	
+
 	return ${E_OK}
 }
 
@@ -182,15 +182,15 @@ function get_devices () {
 
    #DEBUGMSG "BLACKLIST: ${DEV_BLACKLIST}"
    #DEBUGMSG "($(echo "${DEV_BLACKLIST}" | sed -e 's,[[:space:]]\+,|,g' -e 's,\(^|\)\|\(|$\),,g'))"
-   
+
     ${C_IP} ${AF_OPT} addr show | sed -n '/^[[:digit:]]*:[[:space:]]*/,/^[[:digit:]]*:[[:space:]]*/ s|^[[:digit:]]*:[[:space:]]*\([a-zA-Z]*[[:digit:]]*\):.*|\1|p' |\
-    	{
-    	  if [[ -n "${DEV_BLACKLIST}" ]]; then
- 		grep -vE "($(echo "${DEV_BLACKLIST}" | sed -e 's,[[:space:]]\+,|,g' -e 's,\(^|\)\|\(|$\),,g'))"
- 	  else
- 	  	cat
-    	  fi
-    	}
+	{
+	  if [[ -n "${DEV_BLACKLIST}" ]]; then
+		grep -vE "($(echo "${DEV_BLACKLIST}" | sed -e 's,[[:space:]]\+,|,g' -e 's,\(^|\)\|\(|$\),,g'))"
+	  else
+		cat
+	  fi
+	}
 }
 
 # <dev> <af>
@@ -211,7 +211,7 @@ function get_ips () {
 	    # Unknown address family
 	    return ${E_FAIL}
     esac
-    
+
     ${C_IP} ${AF_OPT} addr show | sed -n '/^[[:digit:]]*:[[:space:]]*'"${DEV}"':[[:space:]]*/,/^[[:digit:]]*:[[:space:]]*/ s/^[[:space:]]*'"${AF_KEYWORD}"'[[:space:]]*\([^[:space:]]*\).*/\1/p'
 }
 
@@ -226,7 +226,7 @@ function arp_register_host () {
     if [[ -n "${3}" ]]; then
 	local DEV_OPT="-i ${3}"
     fi
-	
+
     #DEBUGMSG "Adding ${1}@${2} to arp table..."
 
     ${C_ARP} -n ${ARP_OPT} -s "${1}" "${2}" && return ${E_OK} || return ${E_FAIL}
@@ -293,7 +293,7 @@ function send_packet () {
     local FROM="${4}"
     local TO="${5}"
     local TTL="${6}"
-    
+
     case "${AF}" in
 	4)
 	    case "${PROTO}" in
@@ -347,17 +347,17 @@ function is_public_IPv4 () {
 `echo ${1} | tr '.' ' '`
 EOF
     if   (( ${a} == 192 && ${b} == 168 )); then
-        return ${E_FAIL}
+	return ${E_FAIL}
     elif (( ${a} == 10 )); then
-        return ${E_FAIL}
+	return ${E_FAIL}
     elif (( ${a} == 172 && ${b} >= 16 && ${b} <= 31 )); then
-        return ${E_FAIL}
+	return ${E_FAIL}
     elif (( ${a} == 169 && ${b} == 254 )); then
-        return ${E_FAIL}
+	return ${E_FAIL}
     elif (( ${a} == 127 )); then
-        return ${E_FAIL}
+	return ${E_FAIL}
     else
-        return ${E_OK}
+	return ${E_OK}
     fi
 }
 
@@ -368,53 +368,53 @@ function get_open_ports () {
     local AF=${3}
 
     case "${PROTO}" in
-        [Tt][Cc][Pp])
-            local P_OPT='-t'
-            local P_KEY='tcp'
-            ;;
-        [Uu][Dd][Pp])
-            local P_OPT='-u'
-            local P_KEY='udp'
-            ;;
-        *)
+	[Tt][Cc][Pp])
+	    local P_OPT='-t'
+	    local P_KEY='tcp'
+	    ;;
+	[Uu][Dd][Pp])
+	    local P_OPT='-u'
+	    local P_KEY='udp'
+	    ;;
+	*)
 	    # wtf?
-            return ${E_FAIL}
+	    return ${E_FAIL}
     esac
 
     for ip in `${C_NETSTAT} ${P_OPT} -ln | sed -n 's/^'"${P_KEY}"'[[:space:]]*[[:digit:]]*[[:space:]]*[[:digit:]]*[[:space:]]*\([^[:space:]]*\)[[:space:]]*.*/\1/p'`; do
-        echo ${ip} | sed -n 's/^\(.*\):\([[:digit:]]*\)$/\1 \2/p' | while read addr port; do
-            case "${addr}" in
-                ${IP})
-                echo ${port}
-                ;;
-                0.0.0.0)
-                if (( ${AF} == 4 )); then
-                    echo ${port}
-                fi
-                ;;
-                ::)
-                # FIXME: IPv6 only
-                echo ${port}
-                ;;
-            esac
-        done
+	echo ${ip} | sed -n 's/^\(.*\):\([[:digit:]]*\)$/\1 \2/p' | while read addr port; do
+	    case "${addr}" in
+		${IP})
+		echo ${port}
+		;;
+		0.0.0.0)
+		if (( ${AF} == 4 )); then
+		    echo ${port}
+		fi
+		;;
+		::)
+		# FIXME: IPv6 only
+		echo ${port}
+		;;
+	    esac
+	done
     done
 }
 
 function gen_rand_ip () {
 	local IPARR=(`echo ${1} | tr '.' ' '`)
-	
+
 	for ((i=$2, a=3; i >= 8 && a >= 0; i-=8, --a)); do
 		IPARR[$a]=$((($(random 8d) % 253) + 1))
 	done
-	
+
 	#DEBUGMSG "a=${a}, i=${i}"
 	#DEBUGMSG "IP=${1}, m=${2}"
-	
+
 	if ((i > 0)); then
 		IPARR[$a]=$((${IPARR[$a]} | (($(random 8d) % ((2**i) - 1)) + 1)))
 	fi
-	
+
 	echo ${IPARR[0]}.${IPARR[1]}.${IPARR[2]}.${IPARR[3]}
 }
 
@@ -432,7 +432,7 @@ function get_int_ip () {
 	local NET
 	typeset -i BITS
 	typeset -i CIDR
-	
+
 	if ! `echo ${2} | grep -q '^[0-9]\{1,2\}$'`; then
 		CIDR=$(ipcalc -p ${1} ${2} | sed -n 's/^PREFIX=\([0-9]\{1,2\}\)$/\1/p')
 	else
@@ -441,12 +441,12 @@ function get_int_ip () {
 
 	NET="$(ipcalc -n ${1}/${CIDR} | sed -n 's|^NETWORK=\([[:digit:]]\{1,3\}\.[[:digit:]]\{1,3\}\.[[:digit:]]\{1,3\}\.[[:digit:]]\{1,3\}\)$|\1|p')"
 	GIP="$(gen_rand_ip "${NET}" $((32 - $CIDR)))"
-	
+
 	while `arp -an | grep -q "${GIP}"`; do
 		#DEBUGMSG "IP ${GIP} already exists in arp table, generating new one"
 		GIP="$(gen_rand_ip "${NET}" $((32 - $CIDR)))"
 	done
-	
+
 	echo ${GIP}
 }
 
@@ -466,7 +466,7 @@ function scan_ports () {
     local PORT_RANGE="${7}"
     local TTL="${8}"
     local ARPREG=0
-    
+
     case "${PROTO}" in
 	[Tt][Cc][Pp])
 	    local NMAP_OPT='-sS'
@@ -489,7 +489,7 @@ function scan_ports () {
 	    # Unknown address family
 	    return ${E_FAIL}
     esac
-    
+
     case "${FROM}" in
 	OUT) # private range, but out of (IP/MASK) network
 	    FROM_IP="`get_out_ip ${IP} ${MASK}`"
@@ -509,15 +509,15 @@ function scan_ports () {
 	    echo "Internal error in scan_ports(): FROM=\"${FROM}\""
 	    exit $XCCDF_RESULT_ERROR
     esac
-   
+
     #DEBUGMSG "CMD: ${C_NMAP} ${NMAP_OPT} --send-ip --open -n --ttl ${TTL} -T5 -P0 -e ${DEV} -S ${FROM_IP} -p ${PORT_RANGE} ${IP}"
 
     set_system_ttl 1
     ${C_NMAP} ${NMAP_OPT} --send-ip --open -n --ttl ${TTL} -T5 -P0 -e ${DEV} -S ${FROM_IP} -p ${PORT_RANGE} -oG - ${IP} | sed -n -e 's|^.*Ports:[[:space:]]*\(.*\)$|\1|' -e 's|\([[:digit:]]\{1,5\}\)/[-a-z_]*/[-a-z_]*//[-a-z_]*///[,]\{0,1\}|\1|gp'
     reset_system_ttl
-    
+
     if (( $ARPREG == 1 )); then
-    	arp_unregister_host ${FROM_IP}
+	arp_unregister_host ${FROM_IP}
     fi
 
     return ${E_FAIL}
@@ -538,13 +538,13 @@ function check_chain () {
 	    if [[ -z "${RULES}" ]]; then
 		echo "No firewall rules in IPv4 ${1} chain and policy is set to ACCEPT."
 		RET=$XCCDF_RESULT_FAIL
-		
+
 		if (( $ERROK == 0 )); then
 		    return ${E_FAIL}
 		fi
 	    else
 		local LAST="$(echo -e "${RULES}" | sed -n '$ s/^\([[:alnum:]_-]*\)[[:space:]]*all[[:space:]]*.*$/\1/p')"
-		
+
 		if [[ -n "${LAST}" ]]; then
 		    case "${LAST}" in
 			REJECT|DROP)
@@ -571,7 +571,7 @@ function check_chain () {
 	    if [[ -z "${RULES}" ]]; then
 		echo "Policy for IPv4 ${1} chain is set to DROP without any rules."
 		RET=$XCCDF_RESULT_FAIL
-		
+
 		if (( $ERROK == 0 )); then
 		    return ${E_FAIL}
 		fi
@@ -579,13 +579,13 @@ function check_chain () {
 	    ;;
 	RETURN)
 	    if [[ -z "${RULES}" ]]; then
-                echo "Policy for IPv4 ${1} chain is set to RETURN without any rules."
+		echo "Policy for IPv4 ${1} chain is set to RETURN without any rules."
 		RET=$XCCDF_RESULT_FAIL		
 
 		if (( $ERROK == 0 )); then
 		    return ${E_FAIL}
 		fi
-            fi
+	    fi
 	    ;;
 	QUEUE)
 	    if [[ -z "${RULES}" ]]; then
@@ -626,13 +626,13 @@ function check_chain6 () {
 	ACCEPT)
 	    if [[ -z "${RULES}" ]]; then
 		echo "No firewall rules in IPv6 ${1} chain and policy is set to ACCEPT."
-		
+
 		if (( $ERROK == 0 )); then
 		    return ${E_FAIL}
 		fi
 	    else
 		local LAST="$(echo -e "${RULES}" | sed -n '$ s/^\([[:alnum:]_-]*\)[[:space:]]*all[[:space:]]*.*$/\1/p')"
-		
+
 		if [[ -n "${LAST}" ]]; then
 		    case "${LAST}" in
 			REJECT)
@@ -659,7 +659,7 @@ function check_chain6 () {
 	    if [[ -z "${RULES}" ]]; then
 		echo "Policy for IPv6 ${1} chain is set to DROP without any rules."
 		RET=$XCCDF_RESULT_FAIL
-		
+
 		if (( $ERROK == 0 )); then
 		    return ${E_FAIL}
 		fi
@@ -667,13 +667,13 @@ function check_chain6 () {
 	    ;;
 	RETURN)
 	    if [[ -z "${RULES}" ]]; then
-                echo "Policy for IPv6 ${1} chain is set to RETURN without any rules."
+		echo "Policy for IPv6 ${1} chain is set to RETURN without any rules."
 		RET=$XCCDF_RESULT_FAIL
-	
+
 		if (( $ERROK == 0 )); then
 		    return ${E_FAIL}
 		fi
-            fi
+	    fi
 	    ;;
 	QUEUE)
 	    if [[ -z "${RULES}" ]]; then
@@ -708,10 +708,10 @@ if (( ${ENABLE_IPV4} == 1 )); then
     if (( ${PARANOID} == 1 )); then
 	check_chain 'OUTPUT'  'WARNING' 1  || exit $RET
     fi
-    
+
     DEV4="$(get_devices 4)"
     FORWARDING4=0
-    
+
     for device in ${DEV4}; do
 	if [[ -f "${PROC}/sys/net/ipv4/conf/${device}/forwarding" ]]; then
 	    if (( $(cat "${PROC}/sys/net/ipv4/conf/${device}/forwarding") == 1 )); then
@@ -723,14 +723,14 @@ if (( ${ENABLE_IPV4} == 1 )); then
 	    fi
 	fi
     done
-    
+
     if (( $FORWARDING4 == 1 )); then
 	echo "IPv4 forwarding is ENABLED."
 	[ "$RET" == $XCCDF_RESULT_FAIL ] || RET=$XCCDF_RESULT_INFORMATIONAL
 
-    	check_chain 'FORWARD' 'WARNING' 1  || test_exit ${E_OK}
+	check_chain 'FORWARD' 'WARNING' 1  || test_exit ${E_OK}
     fi
-    
+
     SYSCTL_RET=$(${C_SYSCTL} -n net.ipv4.conf.all.accept_source_route)
 
     if (( $SYSCTL_RET != 0 )); then
@@ -748,26 +748,26 @@ if (( ${ENABLE_IPV4} == 1 )); then
     #DEBUGMSG "IPv4 devices: ${DEV4}"
 
     for device in ${DEV4}; do
-	
+
 	SYSCTL_RET=$(${C_SYSCTL} -n net.ipv4.conf.${device}.accept_source_route)
-	
+
 	if (( $SYSCTL_RET != 0 )); then
 	    echo "IPv4 source routing is ENABLED on device \"${device}\""
 	    [ "$RET" == $XCCDF_RESULT_FAIL ] || RET=$XCCDF_RESULT_INFORMATIONAL
 	fi
-	
- 	if (( $ENABLE_IPV4_FWCHECK == 1 )); then
+
+	if (( $ENABLE_IPV4_FWCHECK == 1 )); then
 	    #DEBUGMSG "-- Searching for IPv4 addresses on ${device}"
 	    for device_ipm in `get_ips ${device} 4`; do
 		#DEBUGMSG "---- Found: ${device_ipm}@${device}"
-		
+
 		read device_ip device_ip_mask <<EOF
 `echo "${device_ipm}" | tr '/' ' '`
 EOF
-	
+
 		#DEBUGMSG "ip: ${device_ip}"
 		#DEBUGMSG "mask: ${device_ip_mask}"
-		
+
 		if (( ${SCAN_TCP4} == 1 )); then
 			TCP_PORTS=(`get_open_ports tcp ${device_ip} 4 | sort -n`)
 			echo "Scanning all TCP ports (65535) on ${device_ip}, this can take a long time..."
@@ -789,29 +789,29 @@ EOF
 			    [ "$RET" == $XCCDF_RESULT_FAIL ] || RET=$XCCDF_RESULT_INFORMATIONAL
 			done
 		fi
-		
+
 		if (( ${SCAN_UDP4} == 1 )); then
 			UDP_PORTS=(`get_open_ports udp ${device_ip} 4 | sort -n`)
 			echo "Scanning all UDP ports (65535) on ${device_ip}, this can take a long time..."
 			S_UDP_PORTS=(`scan_ports udp ${device} ${device_ip} ${device_ip_mask} 4 INT 1-65535 64 | sort -n`)
 
 			if (( ${#UDP_PORTS[*]} > ${#S_UDP_PORTS[*]} )); then
-                            echo "Internal error: UDP_PORTS > S_UDP_PORTS"
+			    echo "Internal error: UDP_PORTS > S_UDP_PORTS"
 			    exit $XCCDF_RESULT_ERROR
-                        fi
+			fi
 
-                        TMP=${IFS}
-                        IFS=$'\n'
-                        DIFF=(`echo -e "${UDP_PORTS[*]}\n${S_UDP_PORTS[*]}" | sort | uniq -u`)
-                        DIFF=(`echo -e "${DIFF1[*]}\n${S_TCP_PORTS[*]}" | sort | uniq -d`)
-                        IFS=${TMP}
+			TMP=${IFS}
+			IFS=$'\n'
+			DIFF=(`echo -e "${UDP_PORTS[*]}\n${S_UDP_PORTS[*]}" | sort | uniq -u`)
+			DIFF=(`echo -e "${DIFF1[*]}\n${S_TCP_PORTS[*]}" | sort | uniq -d`)
+			IFS=${TMP}
 
-                        for ((a=0; a < ${#DIFF[*]}; ++a)); do
-                            echo "UDP Port ${DIFF[$a]} is open on ${device_ip} but not visible in netstat."
+			for ((a=0; a < ${#DIFF[*]}; ++a)); do
+			    echo "UDP Port ${DIFF[$a]} is open on ${device_ip} but not visible in netstat."
 			    [ "$RET" == $XCCDF_RESULT_FAIL ] || RET=$XCCDF_RESULT_INFORMATIONAL
-                        done
+			done
 		fi
-				
+
 		#if is_public_IPv4 ${device_ip}; then
 		## -- Public IP -- #
 		#    #DEBUGMSG "---- Public IPv4"
@@ -823,22 +823,22 @@ EOF
 		#fi	    
 	    done
 	fi
-	
+
     done
 fi
 
 if (( ${ENABLE_IPV6} == 1 )); then
     ${C_IP} -6 addr show | grep -q inet6
     if (( $? == 0 )); then
-    	check_chain6 'INPUT'   'ERROR'   0  || exit $RET
-    	
+	check_chain6 'INPUT'   'ERROR'   0  || exit $RET
+
 	if (( ${PARANOID} == 1 )); then
 	    check_chain6 'OUTPUT'  'WARNING' 1  || exit $RET
 	fi
 
 	DEV6="$(get_devices 6)"
 	FORWARDING6=0
-	
+
 	for device in ${DEV6}; do
 	    if [[ -f "${PROC}/sys/net/ipv6/conf/${device}/forwarding" ]]; then
 		if (( $(cat "${PROC}/sys/net/ipv6/conf/${device}/forwarding") == 1 )); then
@@ -850,15 +850,15 @@ if (( ${ENABLE_IPV6} == 1 )); then
 		fi
 	    fi
 	done
-	
+
 	if (( $FORWARDING6 == 1 )); then
 	    echo "IPv6 forwarding is ENABLED."
 	    [ "$RET" == $XCCDF_RESULT_FAIL ] || RET=$XCCDF_RESULT_INFORMATIONAL
-    	    check_chain6 'FORWARD' 'WARNING' 1  || exit $RET
+	    check_chain6 'FORWARD' 'WARNING' 1  || exit $RET
 	fi
-	
+
     else
-    	echo "IPv6 checking is enabled but IPv6 is not supported on this system."
+	echo "IPv6 checking is enabled but IPv6 is not supported on this system."
     fi
 fi
 

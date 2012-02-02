@@ -44,14 +44,14 @@ do
 
 	egrep "^$app|^ALL *:" $DENY > /dev/null
 	isInDeny=$[ 1 - $? ]
-	
+
 	if [ $isInAllow -ne 1 ] && [ $isInDeny -ne 1 ]
 	then
 		echo "Application $app is using tcp wrappers, but does not specify any restrictions in $ALLOW nor in $DENY"
 		echo "Please consider restricting access to this service i.e. according to IP address ranges"
 		RET=$XCCDF_RESULT_FAIL
 	fi
-	
+
 done<<EOF
 $apps
 EOF

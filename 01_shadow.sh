@@ -26,30 +26,30 @@ RET=$XCCDF_RESULT_PASS
 function check_file_perm () {
     if [[ -a "${1}" ]]; then
 	local -i CPERM=$(stat -c '%a' "${1}")
-	
-        if (( ${CPERM} != $2 )); then
+
+	if (( ${CPERM} != $2 )); then
 	    if (( (8#${CPERM} | 8#${2}) == 8#${2} )); then 	
 		if (( ${4} == 1 )); then
-        	    echo "Permissions on $(stat -c '%F' "${1}") \"${1}\" are more restrictive than required: ${CPERM} (${6:-uknown}, required persmissions are ${2})"
-            	fi
+		    echo "Permissions on $(stat -c '%F' "${1}") \"${1}\" are more restrictive than required: ${CPERM} (${6:-uknown}, required persmissions are ${2})"
+		fi
 	    else
-            	if (( ${4} == 1 )); then
+		if (( ${4} == 1 )); then
 		    echo "Wrong permissions on $(stat -c '%F' "${1}") \"${1}\": ${CPERM} (${6:-unknown}, required permissions are ${2})"
 		    RET=$XCCDF_RESULT_FAIL
-            	fi
-            fi
-        fi
-	
-        if ! (stat -c '%U:%G' "${1}" | grep -q "${3}"); then
-            if (( ${4} == 1 )); then
-                echo "Wrong owner/group on $(stat -c '%F' "${1}"): \"${1}\" (${6:-unknown}, required owner/group is ${3})"
+		fi
+	    fi
+	fi
+
+	if ! (stat -c '%U:%G' "${1}" | grep -q "${3}"); then
+	    if (( ${4} == 1 )); then
+		echo "Wrong owner/group on $(stat -c '%F' "${1}"): \"${1}\" (${6:-unknown}, required owner/group is ${3})"
 		RET=$XCCDF_RESULT_FAIL
-            fi
-        fi
+	    fi
+	fi
     else
-        if (( ${4} == 1 )); then
-            echo "Missing file or directory: \"${1}\" (${6:-unknown})"
-            RET=$XCCDF_RESULT_FAIL
+	if (( ${4} == 1 )); then
+	    echo "Missing file or directory: \"${1}\" (${6:-unknown})"
+	    RET=$XCCDF_RESULT_FAIL
 	fi
     fi
 }
@@ -100,7 +100,7 @@ i=0
 while read line
 do
 	i=$[i+1]
-	
+
 	##### empty line #####
 	if [[ "$line" == "" ]]
 	then
@@ -120,13 +120,13 @@ do
 		RET=$XCCDF_RESULT_FAIL
 		continue
 	fi	
-	
+
 	# now we can parse these fields, we know that all fields exist
 	username="`echo $line | awk -F: '{print $1}'`"
 	pass="`echo $line | awk -F: '{print $2}'`"
 	uid="`echo $line | awk -F: '{print $3}'`"
 	gid="`echo $line | awk -F: '{print $4}'`"
-	
+
 	##### line has an empty login field #####
 	if [[ "$username" == "" ]]
 	then
@@ -134,7 +134,7 @@ do
 		echo "Check this line, fill in first item (username), or delete whole line."
 		RET=$XCCDF_RESULT_FAIL
 	fi
-	
+
 	##### disallowed characters #####
 	isValidName $username
 	if [ $? -ne 1 ]
@@ -143,7 +143,7 @@ do
 		echo "Check this line and rename user's login to contain lowercase letters only."
 		RET=$XCCDF_RESULT_FAIL
 	fi
-	
+
 	##### too long username #####
 	getValueFromH '/usr/include/bits/utmp.h' 'UT_NAMESIZE'
 	MaxLength=$?
@@ -154,7 +154,7 @@ do
 		echo "Check this line in $shadow and rename user's login to be shorter than $MaxLength characters"
 		RET=$XCCDF_RESULT_FAIL
 	fi
-	
+
 	##### password empty #####
 	if [[ "$pass" == "" ]]
 	then

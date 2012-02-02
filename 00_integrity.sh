@@ -11,15 +11,15 @@ CMDPATH="/bin:/sbin:/root/bin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
 RPMVERIFY="/usr/bin/rpmverify"
 COREPKG="coreutils"
 DIRECTORY_LIST="/bin
-                /sbin
-                /lib
-                /usr/bin
-                /usr/sbin
-                /usr/lib
-                /usr/libexec
-                /tmp
-                /proc
-                /var"
+		/sbin
+		/lib
+		/usr/bin
+		/usr/sbin
+		/usr/lib
+		/usr/libexec
+		/tmp
+		/proc
+		/var"
 
 function check_dirs () {
     local RET=${XCCDF_RESULT_PASS}
@@ -38,7 +38,7 @@ EOF
 
 function check_cmds () {
     local RET=${XCCDF_RESULT_PASS}
-    
+
     OUTPUT="$(${RPMVERIFY} --noscript --nomtime -f "${COREPKG}" 2> /dev/null)"
     if (( $? != 0 )); then
 	if [[ -n "$(echo -e "${OUTPUT}" | sed -n 's|^[.A-Z0-9]\{8\}[[:space:]]\{1,\}[^c][[:space:]]\{1,\}.*$|&|p')" ]]; then
@@ -46,28 +46,28 @@ function check_cmds () {
 	    exit $XCCDF_RESULT_FAIL
 	fi
     fi
-       
+
     while read path; do    
-    	if [[ "$(stat -c '%A' "${path}" | cut -c 1)" != "l" ]]; then 
+	if [[ "$(stat -c '%A' "${path}" | cut -c 1)" != "l" ]]; then 
 	    COMMANDNAME="$(basename "${path}")"
 	    COMMANDPATH="$(dirname  "${path}")"
 	    COMMANDPATHS="$(echo "${CMDPATH}" | tr ':' ' ' | sed -e "s|[[:space:]]${COMMANDPATH}||g" -e "s|^${COMMANDPATH}[[:space:]]||g")"
-	    
+
 	    unset DUPLICATES
 	    I=0
-	    
+
 	    while read duplicate; do
 		if [[ -n "${duplicate}" ]]; then
-	    	    if [[ "$(stat -c '%A' "${duplicate}" | cut -c 1)" != "l" ]]; then
-	    		DUPLICATES[$I]="${duplicate}"
-	    		I=$(($I + 1))
-	    	    else
-	    		DEST="$(readlink -e "${duplicate}" 2> /dev/null)"
-	    		if [[ "${DEST}" != "${path}" ]]; then
-	    		    DUPLICATES[$I]="${duplicate}"
-	    		    I=$(($I + 1))
-	    		fi	
-	    	    fi
+		    if [[ "$(stat -c '%A' "${duplicate}" | cut -c 1)" != "l" ]]; then
+			DUPLICATES[$I]="${duplicate}"
+			I=$(($I + 1))
+		    else
+			DEST="$(readlink -e "${duplicate}" 2> /dev/null)"
+			if [[ "${DEST}" != "${path}" ]]; then
+			    DUPLICATES[$I]="${duplicate}"
+			    I=$(($I + 1))
+			fi	
+		    fi
 		fi
 	    done <<EOF
 `find ${COMMANDPATHS} -maxdepth 1 -mindepth 1 -name "${COMMANDNAME}" 2> /dev/null`

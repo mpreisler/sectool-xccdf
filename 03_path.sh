@@ -80,7 +80,7 @@ do
 		echo "Please look in your startup scripts and remove this setting. This directory can be used to make you execute a fake (and dangerous) binary file, i.e. ls"
 		RET=$XCCDF_RESULT_FAIL
 	    fi
-	    
+
 	    # group or others writable executable
 	    while read file
 	    do
@@ -93,18 +93,18 @@ do
 	    done<<EOF
 `find -L $dir -perm /o+w -perm /g+w`
 EOF
-	      
+
 	  # owner other than root and can log in
 	  while read file
 	  do
 		if [[ "$file" -ne "" ]]
 		then
-	      		user="`stat -c '%U' $file`"
-	      		if canLogIn "$user"; then
-		      		echo "File ${file}, which is placed in PATH directory ${dir}, is owned by someone else than by root!"
-		      		echo "This is VERY dangerous, since one can change contents of this executable. Please change the owner and group of this file to 'root' immediately!"
-		      		RET=$XCCDF_RESULT_FAIL
-	      		fi
+			user="`stat -c '%U' $file`"
+			if canLogIn "$user"; then
+				echo "File ${file}, which is placed in PATH directory ${dir}, is owned by someone else than by root!"
+				echo "This is VERY dangerous, since one can change contents of this executable. Please change the owner and group of this file to 'root' immediately!"
+				RET=$XCCDF_RESULT_FAIL
+			fi
 		fi
 	  done<<EOF
 `find -L $dir ! -user root`		    

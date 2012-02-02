@@ -18,22 +18,22 @@ while read process; do
     PID=$(echo ${process/$NAME/})
 
     if [[ -f "${PROC}/${PID}/maps" ]]; then
-    	while read inolib; do
-    		LIB="$(echo ${inolib/[0-9]*[[:space:]]/})"
+	while read inolib; do
+		LIB="$(echo ${inolib/[0-9]*[[:space:]]/})"
 		INO=$(echo ${inolib/$LIB/})
 
 		if [[ -n "${LIB}" ]]; then
 			if [[ -f "${LIB}" ]]; then
-	    			if (( $(stat -c '%i' "${LIB}") != ${INO} )); then
+				if (( $(stat -c '%i' "${LIB}") != ${INO} )); then
 					echo "Process ${NAME} (pid: ${PID}) is using shared object ${LIB} that was probably updated!"
-                                        ret=$XCCDF_RESULT_FAIL
-	    			fi
+					ret=$XCCDF_RESULT_FAIL
+				fi
 			else
-	    			echo "Process ${NAME} (pid: ${PID}) is using shared object ${LIB} that doesn't exist!"
-                                ret=$XCCDF_RESULT_FAIL
+				echo "Process ${NAME} (pid: ${PID}) is using shared object ${LIB} that doesn't exist!"
+				ret=$XCCDF_RESULT_FAIL
 			fi
 		fi
-    	done <<EOF
+	done <<EOF
 `cat "${PROC}/${PID}/maps" | sed -n 's|^.*[[:space:]]\([0-9]\{1,\}[[:space:]]*/[[:print:]]*\.so[0-9\.]*\)$|\1|p' | sort | uniq`
 EOF
     fi

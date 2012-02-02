@@ -16,7 +16,7 @@ function get_services () {
 
 function get_service_vars () {
     sed -ne '/^[[:space:]]*service[[:space:]]*'"${1}"'[[:space:]]*/,/^[[:space:]]*service[[:space:]]*.*$/ {
-        /^[[:space:]]*[a-zA-Z_]*[[:space:]]*[-+]\{0,1\}=/,/^[[:space:]]*[a-zA-Z_]*[[:space:]]*=/ s|^[[:space:]]*\([a-zA-Z_]*\)[[:space:]]*\([-+]\{0,1\}\)=[[:space:]]*\(.*\)$|local\ \1="\3"\
+	/^[[:space:]]*[a-zA-Z_]*[[:space:]]*[-+]\{0,1\}=/,/^[[:space:]]*[a-zA-Z_]*[[:space:]]*=/ s|^[[:space:]]*\([a-zA-Z_]*\)[[:space:]]*\([-+]\{0,1\}\)=[[:space:]]*\(.*\)$|local\ \1="\3"\
 local\ \1_op="\2"|p
 }' "${2}"
 
@@ -24,7 +24,7 @@ local\ \1_op="\2"|p
 
 function get_default_vars () {
     sed -ne '/^[[:space:]]*defaults[[:space:]]*$/,/^[[:space:]]*}[[:space:]]*$/ {
-        /^[[:space:]]*[a-zA-Z_]*[[:space:]]*[-+]\{0,1\}=/,/^[[:space:]]*[a-zA-Z_]*[[:space:]]*=/ s|^[[:space:]]*\([a-zA-Z_]*\)[[:space:]]*\([-+]\{0,1\}\)=[[:space:]]*\(.*\)$|local\ \1="\3"\
+	/^[[:space:]]*[a-zA-Z_]*[[:space:]]*[-+]\{0,1\}=/,/^[[:space:]]*[a-zA-Z_]*[[:space:]]*=/ s|^[[:space:]]*\([a-zA-Z_]*\)[[:space:]]*\([-+]\{0,1\}\)=[[:space:]]*\(.*\)$|local\ \1="\3"\
 local\ \1_op="\2"|p
 }' "${1}"
 
@@ -45,7 +45,7 @@ function common_checks () {
 		;;
 	esac
     fi
-    
+
     return ${OK}
 }
 
@@ -144,7 +144,7 @@ fi
 for CONF in ${CONFIGFILES}; do
     for service in $(get_services "${CONF}"); do
 	VARS="$(get_service_vars "${service}" "${CONF}")"
-    
+
 	if [[ "$(type -t "check_${service}")" == "function" ]]; then
 	    common_checks "${VARS}" "${service}" "${DEFAULTS}"
 	    check_${service} "${VARS}" "${DEFAULTS}"

@@ -26,7 +26,7 @@ ret=$XCCDF_RESULT_PASS
 cat $EXPORTS | sed 's/ \+/\t/g' |sed 's/\t\+/\t/g' |  # spaces and tabs to one tab
 {
 	linenr=0
-	
+
 	while read line
 	do
 		linenr=$[ linenr + 1 ]

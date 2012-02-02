@@ -22,7 +22,7 @@ do
 	# todo: check all commands, since one alias can contain more, separated i.e. by ';', '&&' and so on
 
 	#value="`"echo $value" | sed 
-	
+
 	# take a first command..
 	command="`echo $value | awk '{ print $1 }' `"
 	if [[ "$command" == "." ]] || [[ "$command" == "source" ]]
@@ -57,14 +57,14 @@ do
 				RET=$XCCDF_RESULT_FAIL
 			fi
 
-			
+
 			if [[ ${perm:8:1} != '-' ]]
 			then
 				echo "Alias '$name' contains command '$command', which is is world writable"
 				echo "Please unset it the world writing bit"
 				RET=$XCCDF_RESULT_FAIL
 			fi
-			
+
 			owner="`stat -c '%U' $fullpath`"
 			if [[ "$owner" != "root" ]]
 			then
@@ -75,7 +75,7 @@ do
 		fi
 
 	fi
-	
+
 	# it is an included file
 	if [[ "$is_command" == "0" ]]
 	then
@@ -85,7 +85,7 @@ do
 			echo "Alias '$name' includes file '$included_file', which does not exist"
 			[ "$RET" == $XCCDF_RESULT_FAIL ] || RET=$XCCDF_RESULT_INFORMATIONAL
 		else
-		
+
 			# is this file secure? (means not world/group writable + owned by root
 			perm="`stat -L -c '%A' $included_file`"
 			if [[ ${perm:5:1} != '-' ]]
@@ -95,14 +95,14 @@ do
 				RET=$XCCDF_RESULT_FAIL
 			fi
 
-			
+
 			if [[ ${perm:8:1} != '-' ]]
 			then
 				echo "Alias '$name' includes file '$included_file', which is is world writable"
 				echo "Please unset it the world writing bit"
 				RET=$XCCDF_RESULT_FAIL
 			fi
-			
+
 			owner="`stat -c '%U' $fullpath`"
 			if [[ "$owner" != "root" ]]
 			then
