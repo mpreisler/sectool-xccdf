@@ -38,7 +38,7 @@ def generate_rule_id(prefix = "rule-"):
     return "%s%i" % (prefix, last_given_rule_id_suffix)
 
 def rule_to_element(filepath, dscpath):
-    title_text = filepath
+    title_text = os.path.basename(filepath)
     description_text = "STUB"
 
     if dscpath is not None:
@@ -46,8 +46,11 @@ def rule_to_element(filepath, dscpath):
             config = ConfigParser.RawConfigParser()
             config.read(dscpath)
             
-            title_text = config.get("HEADER", "NAME")
-            description_text = config.get("HEADER", "DESCRIPTION")
+            # [1:-1] strips " on both sides
+            
+            title_text = config.get("HEADER", "NAME")[1:-1]
+            # the leading newline is a workaround for XML indentation issue (whitespace is content)
+            description_text = "\n" + config.get("HEADER", "DESCRIPTION")[1:-1]
             
         except Exception as e:
             print("Parsing config file '%s' failed (exception: %s)" % (dscfile, e))
@@ -57,11 +60,14 @@ def rule_to_element(filepath, dscpath):
     ret.set("selected", "true")
     
     title = ElementTree.Element("title")
-    title.text = os.path.basename(title_text)
+    title.text = title_text
     ret.append(title)
     
     description = ElementTree.Element("description")
-    description.text = os.path.basename(description_text)
+    pre = ElementTree.Element("xhtml:pre")
+    pre.set("xmlns:xhtml", "http://www.w3.org/1999/xhtml")
+    pre.text = description_text
+    description.append(pre)
     ret.append(description)
     
     check = ElementTree.Element("check")
