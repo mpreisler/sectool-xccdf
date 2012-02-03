@@ -27,7 +27,7 @@ from datetime import date
 import os.path
 import ConfigParser
     
-sce_system_name = "http://open-scap.org/XMLSchema/SCE-definitions-1"
+sce_system_name = "http://open-scap.org/page/SCE"
 
 last_given_rule_id_suffix = 0
 def generate_rule_id(prefix = "rule-"):
