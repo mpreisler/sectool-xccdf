@@ -103,6 +103,7 @@ root = ElementTree.Element("Benchmark")
 root.set("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
 root.set("xmlns", "http://checklists.nist.gov/xccdf/1.1")
 root.set("id", "STUB")
+root.set("xml:lang", "en")
 
 status = ElementTree.Element("status")
 status.set("date", date.today().strftime("%Y-%m-%d"))
